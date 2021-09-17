@@ -116,7 +116,7 @@ def comment_guard(xs: Iterator[str]) -> Iterator[str]:
     '''
     filter out comment lines of a "file"
 
-    `comment line` is (after trimming) a lines that starts with a hashtag (`#`), as in python codes
+    `comment line` is (after trimming) a line that starts with a hashtag (`#`), as is in python
     '''
     return filter(_not_comment, xs)
 
