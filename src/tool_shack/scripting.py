@@ -6,6 +6,7 @@ import datetime
 import inspect 
 from termcolor import colored
 from tool_shack.core import now_str
+import humanize
 
 from typing import Optional
 
@@ -44,12 +45,13 @@ class StageLogger():
             print(f'\t{self.additional}')
     
     def __exit__(self, _exc_type, _exc_val, _exc_tb): 
-        elapsed_min = (time.perf_counter() - self.start_time) / 60
+        elapsed = (time.perf_counter() - self.start_time)
+        elapsed_delta = datetime.timedelta(0, elapsed)
         if _exc_tb is not None: 
             msg = colored(self.msg_raw, 'red')
-            print(f'{colored("<", "red", attrs=["bold"])} [{msg}] raised an {_exc_type} | on {now_str()} | after {elapsed_min:.2f}s')
+            print(f'{colored("<", "red", attrs=["bold"])} [{msg}] raised an {_exc_type} | on {now_str()} | after {humanize.precisedelta(elapsed_delta)}')
         else : 
-            print(f'{colored("<", "green")} done  [{self.msg}] | on {now_str()} | took {elapsed_min :.2f}s')
+            print(f'{colored("<", "green")} done  [{self.msg}] | on {now_str()} | after {humanize.precisedelta(elapsed_delta)}')
         return None
 
 
@@ -70,7 +72,7 @@ class AggregateVars() :
         self.content = []
         return self
 
-    def __exit__(self, a,b,c) : 
+    def __exit__(self, exec_type, exc_val, exc_tb) : 
         new_list = inspect.currentframe().f_back.f_locals.items()
         for k, v in new_list : 
             if (k not in self.upper_list) :

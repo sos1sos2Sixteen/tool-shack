@@ -17,7 +17,7 @@ def now_str() :
     use the real `datetime` package if you need sophisticated control over formatting.
     """
     from datetime import datetime
-    return datetime.now().strftime("%Y-%m-%d %H:%M")
+    return datetime.now().strftime("%d %H:%M")
 
 
 T = TypeVar('T')
