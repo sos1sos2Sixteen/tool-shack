@@ -8,7 +8,7 @@ from termcolor import colored
 from tool_shack.core import now_str
 import humanize
 
-from typing import Optional
+from typing import Optional, Callable
 
 class EmptyContext(): 
     '''
@@ -32,26 +32,29 @@ class StageLogger():
     Args: 
         stage_name (str): output label to identify the `stage`.
         additional (str): prints an additional line of information upon entrance.
+        logger (callable): the printer, default to the python `print` function, can be altered to any logger api \
+            as long as it support basic `print` usage. (i.e. `print(str) -> None`)
     '''
-    def __init__(self, stage_name: str, additional: Optional[str] = None) -> None: 
+    def __init__(self, stage_name: str, additional: Optional[str] = None, logger: Callable[[str], None]=print) -> None: 
         self.msg_raw = stage_name
         self.msg = colored(stage_name, 'green', attrs=['bold'])
         self.additional = additional
+        self.logger = logger
 
     def __enter__(self): 
         self.start_time = time.perf_counter()
-        print(f'{colored(">", "green")} start [{self.msg}] | on {now_str()}')
+        self.logger(f'{colored(">", "green")} start [{self.msg}] | on {now_str()}')
         if self.additional is not None: 
-            print(f'\t{self.additional}')
+            self.logger(f'\t{self.additional}')
     
     def __exit__(self, _exc_type, _exc_val, _exc_tb): 
         elapsed = (time.perf_counter() - self.start_time)
         elapsed_delta = datetime.timedelta(0, elapsed)
         if _exc_tb is not None: 
             msg = colored(self.msg_raw, 'red')
-            print(f'{colored("<", "red", attrs=["bold"])} [{msg}] raised an {_exc_type} | on {now_str()} | after {humanize.precisedelta(elapsed_delta)}')
+            self.logger(f'{colored("<", "red", attrs=["bold"])} [{msg}] raised an {_exc_type} | on {now_str()} | after {humanize.precisedelta(elapsed_delta)}')
         else : 
-            print(f'{colored("<", "green")} done  [{self.msg}] | on {now_str()} | after {humanize.precisedelta(elapsed_delta)}')
+            self.logger(f'{colored("<", "green")} done  [{self.msg}] | on {now_str()} | after {humanize.precisedelta(elapsed_delta)}')
         return None
 
 
