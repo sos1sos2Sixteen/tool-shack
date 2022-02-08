@@ -1,7 +1,9 @@
 # author: shiyao
 # created: 2021/9/16
 
-from typing import Callable, Iterator
+from typing import Callable, Optional, Union, Pattern
+from termcolor import colored
+import re
 
 TestFunc = Callable[[], None]
    
@@ -31,3 +33,22 @@ def testcase(should_fail: bool = False):
         return decorated
     return decorator
     
+def find_attr(obj: object, pattern: Union[str, Pattern[str]]) -> None: 
+    '''print list of matching attribute names associated with `obj`'''
+
+    pat = re.compile(pattern) if isinstance(pattern, str) else pattern
+    candidates = (filter(lambda attrname: pat.search(attrname) is not None, dir(obj)))
+    
+    def ignore_longer(s: Optional[str], n: int) -> str: 
+        '''truncate strings longer than n'''
+        if s is None: 
+            return ''   # early return
+        
+        s = s.strip()
+        if len(s) < n: 
+            return s
+        else: 
+            return s[:n] + '...'
+    
+    for c in candidates: 
+        print(f'{colored(c, "green")} | {ignore_longer(getattr(obj, c).__doc__, 50)}')

@@ -102,6 +102,18 @@ def test_indices():
         3: 6
     }
 
+def test_find_attr(): 
+    import re
+    class A(): 
+        def test_a(self): 
+            '''doc string for method `a`'''
+            pass
+        def test_b(self): 
+            '''doc string for method b'''
+            pass
+
+    debug.find_attr(A(), 'test')
+    debug.find_attr(A(), re.compile('test'))
 
 def main(): 
     parser = argparse.ArgumentParser()
@@ -118,7 +130,8 @@ def main():
         test_bigand,
         test_null,
         test_unique,
-        test_indices
+        test_indices,
+        test_find_attr,
     ]
 
     for case in test_cases: 
