@@ -3,7 +3,7 @@
 
 # generic data manipulation
 # functions defined in this scope are more easily understood by considering their type signatures.
-
+from itertools import islice
 from typing import TypeVar, Callable, Sequence, Iterator, Optional, Dict, List, Tuple
 
 T = TypeVar('T')
@@ -145,3 +145,14 @@ def gen_disjoint_indices(population: int, max_try: int = 3) -> Iterator[int]:
                 break
             candidate = random.randint(0, population - 1)
         yield candidate
+
+def window(seq, n=2):
+    "Returns a sliding window (of width n) over data from the iterable"
+    "   s -> (s0,s1,...s[n-1]), (s1,s2,...,sn), ...                   "
+    it = iter(seq)
+    result = tuple(islice(it, n))
+    if len(result) == n:
+        yield result
+    for elem in it:
+        result = result[1:] + (elem,)
+        yield result
