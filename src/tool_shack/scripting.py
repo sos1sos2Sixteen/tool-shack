@@ -7,8 +7,10 @@ import inspect
 from termcolor import colored
 from tool_shack.core import now_str
 import humanize
+import colorful
+import colour
 
-from typing import Optional, Callable
+from typing import Optional, Callable, Tuple
 
 class EmptyContext(): 
     '''
@@ -91,3 +93,46 @@ class AggregateVars() :
     def __iter__(self) : 
         for v in self.content : 
             yield v
+
+class ColorGradientSerializer(): 
+    def __init__(self, 
+        value_range: Tuple[float, float] = (0, 1),
+        start_color_name: str = '#ff5544', 
+        end_color_name: str = '#44aa22', 
+        n_gradient: int = 10, 
+        alpha: float = 0.5,
+        v_gap: float = 0.1
+    ): 
+        self.palette = {
+            str(cid): c.get_hex_l()
+            for cid, c in enumerate(colour.Color(start_color_name).range_to(
+                colour.Color(end_color_name), n_gradient
+            ))
+        }
+
+        self.v_range = value_range
+        self.n_gradient = n_gradient
+        self.alpha = alpha
+    
+    def map_value(self, v: float) -> int: 
+        s, e = self.v_range
+        if v >= e: return self.n_gradient - 1
+        if v <= s: return 0
+        return int((v - s) / (e - s) * self.n_gradient)
+    
+    def update_v_range(self, v: float) -> None: 
+        pass
+
+    def _print_gradient(self) -> None: 
+        import numpy as np
+        with colorful.with_palette(self.palette) as C: 
+            for (cid, hexname), v in zip(self.palette.items(), np.linspace(*self.v_range, self.n_gradient)): 
+                print(getattr(C, cid)(f'{v}: {hexname}'))
+
+    def __call__(self, value: float, format: Optional[str] = None) -> str: 
+        with colorful.with_palette(self.palette) as C: 
+            return getattr(C, str(self.map_value(value)))(('%f' if format is None else format)%(value))
+        self.update_v_range(value)
+
+
+
