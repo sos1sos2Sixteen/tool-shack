@@ -137,8 +137,9 @@ class ColorGradientSerializer():
 
     def __call__(self, value: float, format: Optional[str] = None) -> str: 
         with colorful.with_palette(self.palette) as C: 
-            return getattr(C, str(self.map_value(value)))(('%f' if format is None else format)%(value))
+            res = getattr(C, str(self.map_value(value)))(('%f' if format is None else format)%(value))
         self.update_v_range(value)
+        return res
 
 
 
