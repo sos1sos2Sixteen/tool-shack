@@ -6,6 +6,7 @@ import datetime
 import inspect 
 from termcolor import colored
 from tool_shack.core import now_str
+from collections import deque
 import humanize
 import colorful
 import colour
@@ -101,7 +102,8 @@ class ColorGradientSerializer():
         end_color_name: str = '#44aa22', 
         n_gradient: int = 10, 
         alpha: float = 0.5,
-        v_gap: float = 0.1
+        v_gap: float = 0.1,
+        n_history: int = 100
     ): 
         self.palette = {
             str(cid): c.get_hex_l()
@@ -113,6 +115,9 @@ class ColorGradientSerializer():
         self.v_range = value_range
         self.n_gradient = n_gradient
         self.alpha = alpha
+        self.history = deque(maxlen=n_history)
+        self.history.append(value_range[0])
+        self.history.append(value_range[1])
     
     def map_value(self, v: float) -> int: 
         s, e = self.v_range
@@ -121,7 +126,8 @@ class ColorGradientSerializer():
         return int((v - s) / (e - s) * self.n_gradient)
     
     def update_v_range(self, v: float) -> None: 
-        pass
+        self.history.append(v)
+        self.v_range = (min(self.history), max(self.history))
 
     def _print_gradient(self) -> None: 
         import numpy as np
