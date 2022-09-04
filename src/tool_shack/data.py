@@ -156,3 +156,12 @@ def window(seq, n=2):
     for elem in it:
         result = result[1:] + (elem,)
         yield result
+
+def find(target: T, xs: Sequence[T], key: Callable[[T], K] = lambda x: x) -> Optional[T]: 
+    '''linear search on iterable
+    
+    returns the target element in `xs`, returns None if not found.
+    '''
+    for x in xs: 
+        if key(x) == target: return x
+    return None
