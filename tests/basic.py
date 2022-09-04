@@ -102,6 +102,7 @@ def test_indices():
         3: 6
     }
 
+@testcase()
 def test_find_attr(): 
     import re
     class A(): 
@@ -114,6 +115,16 @@ def test_find_attr():
 
     debug.find_attr(A(), 'test')
     debug.find_attr(A(), re.compile('test'))
+
+@testcase()
+def test_stdout_redirect(): 
+    import io
+    with io.StringIO() as f: 
+        with scripting.move_stdout(f): 
+            print(f'abc')
+        written = f.getvalue().strip()
+        print(f'what is written is : {written}')
+        assert written == 'abc', f'temp file reads: {written}'
 
 def main(): 
     parser = argparse.ArgumentParser()
@@ -132,6 +143,7 @@ def main():
         test_unique,
         test_indices,
         test_find_attr,
+        test_stdout_redirect,
     ]
 
     for case in test_cases: 

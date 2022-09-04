@@ -7,11 +7,12 @@ import inspect
 from termcolor import colored
 from tool_shack.core import now_str
 from collections import deque
+from contextlib import contextmanager
 import humanize
 import colorful
 import colour
 
-from typing import Optional, Callable, Tuple
+from typing import Optional, Callable, Tuple, TextIO
 
 class EmptyContext(): 
     '''
@@ -142,4 +143,17 @@ class ColorGradientSerializer():
         return res
 
 
+@contextmanager
+def move_stdout(f: TextIO): 
+    '''temporarily redirect stdout to file `f`
+    
+    note: not responsible for closing the file `f` on exit!
+    '''
+    import sys
+    saved_stdout = sys.stdout
+    sys.stdout = f
+    try: 
+        yield None
+    finally: 
+        sys.stdout = saved_stdout
 
