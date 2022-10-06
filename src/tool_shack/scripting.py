@@ -104,8 +104,11 @@ class ColorGradientSerializer():
         n_gradient: int = 10, 
         alpha: float = 0.5,
         v_gap: float = 0.1,
-        n_history: int = 100
+        n_history: int = 100,
+        reverse_gradient: bool = False
     ): 
+        if reverse_gradient: 
+            start_color_name, end_color_name = end_color_name, start_color_name
         self.palette = {
             str(cid): c.get_hex_l()
             for cid, c in enumerate(colour.Color(start_color_name).range_to(

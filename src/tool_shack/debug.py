@@ -1,8 +1,11 @@
 # author: shiyao
 # created: 2021/9/16
 
-from typing import Callable, Optional, Union, Pattern
+from typing import Callable, Optional, Union, Pattern, List, Dict
 from termcolor import colored
+from collections import defaultdict
+from tool_shack.scripting import ColorGradientSerializer
+import time
 import re
 
 __all__ = ['TestFunc', 'testcase', 'find_attr']
@@ -54,3 +57,44 @@ def find_attr(obj: object, pattern: Union[str, Pattern[str]]) -> None:
     
     for c in candidates: 
         print(f'{colored(c, "green")} | {ignore_longer(getattr(obj, c).__doc__, 50)}')
+
+_benchmark_logs: Dict[str, List[float]] = defaultdict(lambda: [0])
+
+def benchmark(func): 
+    def decorated(*args, **kwargs): 
+        start = time.perf_counter()
+        res = func(*args, **kwargs)
+        end = time.perf_counter()
+
+        elapsed = end - start
+        _benchmark_logs[func.__qualname__][0] += 1
+        _benchmark_logs[func.__qualname__].append(elapsed)
+
+        return res
+    return decorated
+
+def print_benchmark(): 
+    import numpy as np 
+    collected = []
+    for name, logs in _benchmark_logs.items(): 
+        log = np.array(logs[1:])
+        nc = logs[0]
+        collected.append((name, log.mean(), log.std(), log.min(), log.max(), nc))
+    
+    # sorted by `mean` DESC
+    collected.sort(key=lambda x: -x[1])
+    painter = ColorGradientSerializer(
+        (collected[-1][1], collected[0][1]), 
+        reverse_gradient=True
+    )
+
+    fmt = '%.3f'
+    for name, mean, std, mini, maxi, nc in collected: 
+        print(f'{colored(name, attrs=["bold"])}', end='\t| ')
+        print(f'{nc} calls, ', end='')
+        print(f'elapsed: {painter(mean,fmt)}s±{std:.3f} in [{painter(mini,fmt)} ~ {painter(maxi,fmt)}]s')
+
+    
+    
+
+

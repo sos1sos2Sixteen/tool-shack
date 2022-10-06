@@ -126,6 +126,12 @@ def test_stdout_redirect():
         print(f'what is written is : {written}')
         assert written == 'abc', f'temp file reads: {written}'
 
+@testcase()
+def test_linear_find(): 
+    xs = [0, 1, 2, 3, 4]
+    for idx, x in enumerate(xs): 
+        assert idx == data.find(x, xs)
+
 def main(): 
     parser = argparse.ArgumentParser()
     parser.add_argument('-v', '--verbose', action='store_true', default=False, help='print stack trace on error')
@@ -144,6 +150,7 @@ def main():
         test_indices,
         test_find_attr,
         test_stdout_redirect,
+        test_linear_find,
     ]
 
     for case in test_cases: 
