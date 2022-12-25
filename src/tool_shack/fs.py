@@ -34,7 +34,22 @@ class HashFilenameMapper():
 
 T = TypeVar('T')
 class DeferedReadError(Generic[T]): 
-    '''defers a `FileNotFound` error till the loaded content is actually being read, instead of on initialization.'''
+    '''defers a `FileNotFound` error till the loaded content is actually being read, instead of on initialization.
+    
+    usage: 
+    ```
+
+    # initialization (continues if file does not exist)
+    data_wrapped = DeferedReadError(
+        'path/to/file', 
+        lambda f: {maps a TextIO handle to a memory data structure}
+    )
+
+    # read (access through wrapped.loaded), crashes if io had failed on initialization.
+    data_line = data_wrapped.loaded.attribute...
+    ```
+    
+    '''
     def __init__(self, filename: str, loader: Callable[[TextIO], T]) -> None: 
         self._loaded = None
         self.filename = filename
