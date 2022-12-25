@@ -157,6 +157,20 @@ def window(seq, n=2):
         result = result[1:] + (elem,)
         yield result
 
+def chunk(iterable: Iterator[T], chunk_size: int) -> Iterator[T]:
+    '''chunk([4, 2, 3, 1], 3) -> [[4, 2, 3], [1]]
+    
+    note: last batch kept.
+    '''
+    ret = []
+    for record in iterable:
+        ret.append(record)
+        if len(ret) == chunk_size:
+            yield ret
+            ret = []
+    if ret:
+        yield ret
+
 def find(target: T, xs: Sequence[T], key: Callable[[T], K] = lambda x: x) -> Optional[T]: 
     '''linear search on iterable
     
