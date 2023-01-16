@@ -3,7 +3,7 @@ import os
 import math
 import hashlib
 import sys
-from typing import Callable, TextIO, Any, TypeVar, Generic
+from typing import Callable, TextIO, Any, TypeVar, Generic, Union
 
 class HashFilenameMapper(): 
     def __init__(self,  parent_dir: str, n_bins: int = 128, debug=False) -> None: 
@@ -36,6 +36,15 @@ T = TypeVar('T')
 class DeferedReadError(Generic[T]): 
     '''defers a `FileNotFound` error till the loaded content is actually being read, instead of on initialization.
     
+    parameters: 
+    * `filename`: path to the file to be read. will be passed to `loader`.
+    * `loader`: maps an open file handler or a path string to the loaded data structure.
+        if a `FileNotFoundError` is raised within this call, this instance enters a deferred read error state,
+        where any actual attempts to read the loaded data will result in a `FileNotFoundError` to be raised
+        at the time of reading.
+    * do_open: determines the type of the loader. if set (default), loader: (TextIO) -> T, 
+        if not set, loader: (str) -> T.
+
     usage: 
     ```
 
@@ -50,12 +59,15 @@ class DeferedReadError(Generic[T]):
     ```
     
     '''
-    def __init__(self, filename: str, loader: Callable[[TextIO], T]) -> None: 
+    def __init__(self, filename: str, loader: Callable[[Union[TextIO, str]], T], do_open: bool = True) -> None: 
         self._loaded = None
         self.filename = filename
         try: 
-            with open(filename) as f: 
-                self._loaded = loader(f)
+            if do_open: 
+                with open(filename) as f: 
+                    self._loaded = loader(f)
+            else: 
+                self._loaded = loader(filename)
         except FileNotFoundError: 
             print(f'warn: file [{filename}] cannot be loaded but carry on.', file=sys.stderr)
     
