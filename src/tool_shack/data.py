@@ -179,3 +179,13 @@ def find(target: T, xs: Sequence[T], key: Callable[[T], K] = lambda x: x) -> Opt
     for x in xs: 
         if key(x) == target: return x
     return None
+
+def apply_function(x, op, predicate):
+    if isinstance(x, (list, tuple)):
+        return type(x)(apply_function(item, op) for item in x)
+    elif isinstance(x, dict):
+        return {k: apply_function(v, op) for k, v in x.items()}
+    elif predicate(x):
+        return op(x)
+    else:
+        return x

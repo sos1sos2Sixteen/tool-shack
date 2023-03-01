@@ -1,6 +1,7 @@
 # author: shiyao
 # created: 2021/9/16
 
+import sys
 import time 
 import datetime
 import inspect 
@@ -29,6 +30,35 @@ class EmptyContext():
     def __exit__(self, exec_type, exc_val, exc_tb): 
         pass
 
+class IndentStdout(): 
+    def __init__(self, indent_space = 2): 
+        self.indent_space = indent_space
+        self.indent_level = 0
+        self._sys_stdout = sys.stdout
+
+    @property
+    def activated(self,) -> bool: return self.indent_level > 0
+
+    def write(self, message):
+        indent_str = ' ' * (self.indent_space * self.indent_level)
+        self._sys_stdout.write(indent_str + message)
+    
+    def flush(self, ): 
+        self._sys_stdout.flush()
+    
+    def print_through(self, *args, **kwargs):
+        print(*args, **kwargs, file=self._sys_stdout)
+    
+    def increase(self, ): 
+        self.indent_level += 1
+        if self.activated: sys.stdout = self
+    
+    def decrease(self, ): 
+        self.indent_level -= 1
+        if not self.activated: sys.stdout = self._sys_stdout
+
+_indent_stdout = IndentStdout()
+
 class StageLogger(): 
     '''
     print timing information before and after the surrounded context.
@@ -38,20 +68,25 @@ class StageLogger():
         additional (str): prints an additional line of information upon entrance.
         logger (callable): the printer, default to the python `print` function, can be altered to any logger api \
             as long as it support basic `print` usage. (i.e. `print(str) -> None`)
+        capture (bool): capture `sys.stdout` to add appropriate indentation to all `print` calls.
     '''
-    def __init__(self, stage_name: str, additional: Optional[str] = None, logger: Callable[[str], None]=print) -> None: 
+    def __init__(self, stage_name: str, additional: Optional[str] = None, logger: Callable[[str], None]=print, capture: bool = False) -> None: 
         self.msg_raw = stage_name
         self.msg = colored(stage_name, 'green', attrs=['bold'])
         self.additional = additional
         self.logger = logger
+        self.capture = capture
 
     def __enter__(self): 
         self.start_time = time.perf_counter()
         self.logger(f'{colored(">", "green")} start [{self.msg}] | on {now_str()}')
         if self.additional is not None: 
             self.logger(f'\t{self.additional}')
+        if self.capture: _indent_stdout.increase()
     
     def __exit__(self, _exc_type, _exc_val, _exc_tb): 
+        if self.capture: _indent_stdout.decrease()
+
         elapsed = (time.perf_counter() - self.start_time)
         elapsed_delta = datetime.timedelta(0, elapsed)
         if _exc_tb is not None: 
@@ -60,6 +95,7 @@ class StageLogger():
         else : 
             self.logger(f'{colored("<", "green")} done  [{self.msg}] | on {now_str()} | after {humanize.precisedelta(elapsed_delta)}')
         return None
+
 
 
 
