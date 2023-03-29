@@ -132,6 +132,14 @@ def test_linear_find():
     for idx, x in enumerate(xs): 
         assert idx == data.find(x, xs)
 
+@testcase()
+def temp_pwd(): 
+    import sh
+    print(sh.ls())
+    with scripting.with_pwd('/'): 
+        print(sh.ls())
+    print(sh.ls())
+
 def main(): 
     parser = argparse.ArgumentParser()
     parser.add_argument('-v', '--verbose', action='store_true', default=False, help='print stack trace on error')
@@ -151,6 +159,7 @@ def main():
         test_find_attr,
         test_stdout_redirect,
         test_linear_find,
+        temp_pwd,
     ]
 
     for case in test_cases: 

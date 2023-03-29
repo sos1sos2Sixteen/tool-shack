@@ -196,3 +196,17 @@ def move_stdout(f: TextIO):
     finally: 
         sys.stdout = saved_stdout
 
+@contextmanager
+def with_pwd(target_pwd: str): 
+    '''temporarily redirect current working directory (pwd) to `target_pwd`.'''
+    import os 
+    import sh
+    current_pwd = str(sh.pwd()).strip()
+    os.chdir(target_pwd)
+    try: 
+        yield None
+    finally: 
+        os.chdir(current_pwd)
+
+
+
